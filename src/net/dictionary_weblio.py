@@ -1,6 +1,7 @@
-import urllib.request
 import urllib.parse
+import urllib.request
 from urllib.parse import quote
+
 from fake_useragent import UserAgent
 
 

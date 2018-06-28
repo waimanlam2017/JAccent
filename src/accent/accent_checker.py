@@ -1,15 +1,16 @@
+import pickle
+
 from net.dictionary_weblio import WeblioCaller
 from nlp.bs import Soup
-import pickle
 
 
 class AccentChecker():
     def __init__(self):
         self.cache_dict = {}
-        self.weblio_caller = WeblioCaller()
-        self.soup = Soup()
         self.aiueo = ['あ', 'い', 'う', 'え', 'お']
         self.pickle_name = 'pickle_dict.dict'
+        self.weblio_caller = WeblioCaller()
+        self.soup = Soup()
         self.load_cache_dict()
 
     def special_word_checking(self, word, pos):
@@ -51,8 +52,8 @@ class AccentChecker():
                 debug_line = "イ形容詞變化型-く: " + transformed_word + ", 發音: " + pronunciation_non_changing_part + "く, 聲調(按規則推斷): " + str(
                     vary_accent) + ", 原來聲調: " + str(original_accent)
 
-                self.cache_dict[word] = [vary_accent, pronunciation, debug_line, word]
-                return (vary_accent, pronunciation, debug_line, word)
+                self.cache_dict[word] = [vary_accent, pronunciation, debug_line]
+                return (vary_accent, pronunciation, debug_line)
             else:
                 return None
         elif pos == "形容詞" and word.endswith("かっ"):  # Checking variation with かっ
@@ -87,8 +88,8 @@ class AccentChecker():
                 debug_line = "イ形容詞變化型-かった: " + transformed_word + ", 發音: " + pronunciation_non_changing_part + "かった, 聲調(估計): " + str(
                     vary_accent) + ", 原來聲調: " + str(original_accent)
 
-                self.cache_dict[word] = [vary_accent, pronunciation, debug_line, word]
-                return (vary_accent, pronunciation, debug_line, word)
+                self.cache_dict[word] = [vary_accent, pronunciation, debug_line]
+                return (vary_accent, pronunciation, debug_line)
             else:
                 return None
         else:  # Other transformed adjective, not supported now
@@ -100,10 +101,29 @@ class AccentChecker():
         text = http_result[1]
         result = self.soup.parse_html(text, word, pos)
         if result:
-            self.cache_dict[word] = [int(result[0]), result[1], result[2], result[3]]
-            return (int(result[0]), result[1], result[2], result[3])
+            self.cache_dict[word] = [int(result[0]), result[1], result[2]]
+            return (int(result[0]), result[1], result[2])
         else:
             return None
+
+    def getGreekLetterAsAccent(self, accent):
+        if accent == 0:
+            symbol_accent = 'α'
+        elif accent == 1:
+            symbol_accent = 'β'
+        elif accent == 2:
+            symbol_accent = 'γ'
+        elif accent == 3:
+            symbol_accent = 'δ'
+        elif accent == 4:
+            symbol_accent = 'ϵ'
+        elif accent == 5:
+            symbol_accent = 'ζ'
+        elif accent == 6:
+            symbol_accent = 'η'
+        else:
+            symbol_accent = accent
+        return symbol_accent
 
     def save_cache_dict(self):
         with open(self.pickle_name, 'wb') as handle:

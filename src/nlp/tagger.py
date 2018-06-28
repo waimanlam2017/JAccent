@@ -4,6 +4,7 @@ import MeCab
 class PosTagger():
     def __init__(self):
         self.m = MeCab.Tagger("-Ochasen")
+
     def parse_text(self, text):
         self.m.parse("")
         parsed = self.m.parseToNode(text)
