@@ -1,14 +1,15 @@
+import getopt
+import sys
 from random import randint
 from time import sleep
+from datetime import datetime
 
 from accent.accent_checker import AccentChecker
 from nlp.tagger import PosTagger
 from util.msword import DocWriter
 
-import sys
-import getopt
 
-class JapanTextAnalyzer():
+class JapanTextAnalyzer:
 
     def __init__(self):
         self.japan_pos = ['連体詞', '接続詞', '助詞', '形容詞', '記号', '名詞', '接頭詞', '副詞', 'BOS/EOS', '助動詞', 'フィラー', '感動詞', '動詞']
@@ -58,24 +59,29 @@ class JapanTextAnalyzer():
         # Source text file - End
 
         # MeCab Tagging Process - Start
+        startTime = datetime.now()
+        print("Start parsing word to pos:", startTime)
         tagged_text_tp = self.pos_tagger.parse_text(text)
         # MeCab Tagging Process - End
+        print("Finished parsing word to pos:", datetime.now() - startTime)
 
         # Extract Accent - Start
         output_line = ''
         debug_note = []
         no_result_note = []
         accent_note = []
-        for word in tagged_text_tp:
+        for tagged_word in tagged_text_tp:
             # self.randomDelay()
-            original_word = word[0]
-            pos = word[1]
+            word = tagged_word[0]
+            pos = tagged_word[1]
 
             if pos in self.target_post:  # Lookup dictionary
-                if pos == "形容詞" and (original_word.endswith('かっ') or original_word.endswith('く')):
-                    result = self.accent_checker.weblio_special_search(original_word, pos)
-                else:
-                    result = self.accent_checker.weblio_original_search(original_word, pos)
+                result = self.fixed_lookup(word)
+                if ( result is None ):
+                    if pos == "形容詞" and (word.endswith('かっ') or word.endswith('く')):
+                        result = self.accent_checker.weblio_special_search(word, pos)
+                    else:
+                        result = self.accent_checker.weblio_original_search(word, pos)
 
                 if result:  # Dictionary returned something
                     accent = result[0]
@@ -88,14 +94,14 @@ class JapanTextAnalyzer():
 
                     symbol_accent = self.accent_checker.getGreekLetterAsAccent(accent)
 
-                    output_line += str(symbol_accent) + original_word
+                    output_line += str(symbol_accent) + word
                 else:  # Dictionary no result
-                    no_result_note.append(original_word + " : " + pos + ", 字典查無此字。")
-                    output_line += original_word
+                    no_result_note.append(word + " : " + pos + ", 字典查無此字。")
+                    output_line += word
             else:  # Does not Lookup Dictionary
-                output_line += original_word
+                output_line += word
 
-            if pos in self.punc_post and (original_word == '。' or original_word == '？' or original_word == '?'):
+            if pos in self.punc_post and (word == '。' or word == '？' or word == '?'):
                 output_line += "Ω"
 
         # Extract Accent - End
@@ -103,25 +109,32 @@ class JapanTextAnalyzer():
 
 
 
-    def fixed_lookup(self, word, pos):
-        result = self.special_word_checking(word, pos)
-        if (result is not None):
-            return (result[0], result[1], result[2], result[3])
-
-        if (word in self.cache_dict):
-            result = self.cache_dict[word]
-            return (result[0], result[1], result[2], result[3])
+    def fixed_lookup(self, word):
+        print("fixed_lookup:", word)
+        print(word in self.accent_checker.cache_dict)
+        if word in self.accent_checker.cache_dict:
+            result = self.accent_checker.cache_dict[word]
+            return (result[0], result[1], result[2])
+        return None
 
     def save_accent_cache_dict(self):
         self.accent_checker.save_cache_dict()
 
-    def randomDelay(self):
+    def random_delay(self):
         sleep(randint(3, 6))
 
 
 if __name__ == "__main__":
+    startTime = datetime.now()
     Jp = JapanTextAnalyzer()
-    print(sys.argv[1:])
+    Jp.accent_checker.load_cache_dict()
+    print(Jp.accent_checker.cache_dict)
+    print("Processing main()", datetime.now() - startTime)
     result = Jp.main(sys.argv[1:])
+    print("Finished main()", datetime.now() - startTime)
+    print("Processing doc", datetime.now() - startTime)
     Jp.doc_writer.write_to_doc(result[0], result[1], result[2], result[3])
+    print("Finished doc", datetime.now() - startTime)
+    print("Save dump", datetime.now() - startTime)
     Jp.save_accent_cache_dict()
+    print("Grand Finished", datetime.now() - startTime)

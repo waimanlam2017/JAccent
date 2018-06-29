@@ -8,16 +8,29 @@ class DocWriter:
     def __init__(self, project_data, doc_filename):
         self.project_data = project_data
         self.doc_filename = doc_filename
+        self.document = Document()
+
+    def add_paragraph(self, document, heading, lines):
+        document.add_heading(heading)
+        for line in lines:
+            paragraph = document.add_paragraph()
+            paragraph.add_run(line)
+
+    def add_paragraph_bold_checking(self, document, heading, lines, keyword):
+        document.add_heading(heading)
+        for line in lines:
+            paragraph = document.add_paragraph()
+            run = paragraph.add_run(line)
+            if keyword in line:
+                run.font.bold = True
 
     def write_to_doc(self, output_line, accent_note, debug_note, no_result_note):
         accent_symbol = ['α', 'β', 'γ', 'δ', 'ϵ', 'ζ', 'η']
         first_no_voice = ['き', 'し', 'ち', 'ひ', 'ぴ', 'く', 'す', 'つ', 'ふ', 'ぷ']
         second_no_voice = ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'は', 'ひ', 'ふ',
                            'へ', 'ほ', 'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
-
-        document = Document()
-        document.add_heading('Japanese Accent')
-        paragraph = document.add_paragraph()
+        self.document.add_heading('Japanese Accent')
+        paragraph = self.document.add_paragraph()
 
         run_list = []
         for char in output_line:
@@ -39,7 +52,7 @@ class DocWriter:
                 run = paragraph.add_run(accent)
                 run.font.superscript = True
             elif char == 'Ω':
-                paragraph = document.add_paragraph()
+                paragraph = self.document.add_paragraph()
                 continue
             else:
                 run = paragraph.add_run(char)
@@ -59,25 +72,14 @@ class DocWriter:
             else:
                 run_stack.popleft()
 
-        document.add_page_break()
-        document.add_heading('Dictionary Note')
-        for line in debug_note:
-            paragraph = document.add_paragraph()
-            run = paragraph.add_run(line)
-            if "請覆查字典" in line:
-                run.font.bold = True
+        self.document.add_page_break()
+        self.add_paragraph_bold_checking(self.document, 'Dictionary Note', debug_note, '請覆查字典')
 
-        document.add_page_break()
-        document.add_heading('Accent Note')
-        for line in accent_note:
-            paragraph = document.add_paragraph()
-            paragraph.add_run(line)
+        self.document.add_page_break()
+        self.add_paragraph(self.document, 'Accent Note', accent_note)
 
-        document.add_page_break()
-        document.add_heading('No Result Note')
-        for line in no_result_note:
-            paragraph = document.add_paragraph()
-            paragraph.add_run(line)
+        self.document.add_page_break()
+        self.add_paragraph(self.document, 'No Result Note', no_result_note)
 
-        document.save(self.project_data + self.doc_filename)
+        self.document.save(self.project_data + self.doc_filename)
 

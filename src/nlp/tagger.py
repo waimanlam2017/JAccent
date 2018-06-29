@@ -1,5 +1,6 @@
 import MeCab
 
+#No unit test for this class, it just call MeCab without special logic
 
 class PosTagger():
     def __init__(self):
