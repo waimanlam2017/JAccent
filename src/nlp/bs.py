@@ -34,7 +34,7 @@ class Soup:
                         accent = int(''.join(search_result))
 
         if accent_result_count > 0 :
-            return ( accent, accent_result_count )
+            return accent, accent_result_count
         else:
             return None
 
@@ -44,19 +44,20 @@ class Soup:
 
         soup = BeautifulSoup(html_doc, 'html.parser')
 
-        # Checking the pronunciation - Start
         pronunciation = self.lookup_pronunciation(soup)
-        # Checking the pronunciation - End
 
-        # Checking the accent - First Pass Start
-        debug_line = ''
         accent_search_result = self.lookup_accent(soup)
         if accent_search_result:
-            if accent_search_result[1] > 1 :
-                debug_line += ". 請覆查字典。檢索結果多於1。共有" + str(accent_search_result[1]) + "個檢索結果。"
+            debug_line = self.check_accent_result(word, accent_search_result[1])
             if pronunciation:
-                return (accent_search_result[0], pronunciation, debug_line)
+                return accent_search_result[0], pronunciation, debug_line
             else:
-                return (accent_search_result[0], '', debug_line)
+                return accent_search_result[0], '', debug_line
         else:
             return None
+
+    def check_accent_result(self, word, accent_result_count):
+        if accent_result_count > 1:
+            return word + ': 請覆查字典。檢索結果多於1。共有' + str(accent_result_count) + '個檢索結果。'
+        else:
+            return ''

@@ -17,7 +17,7 @@ class WeblioCaller:
         """Description: Call Weblio and return html text along with http status code
         """
         while True:
-            print("Performing a http request to weblio")
+            print("Performing a http request to weblio for word " + word)
             req = urllib.request.Request(
                 self.weblio_url + quote(word),
                 data=None,
@@ -28,8 +28,8 @@ class WeblioCaller:
             with urllib.request.urlopen(req) as r:
                 result = r.read()
                 status = r.status
-                if ( status < 300 ):
-                    return (status, result)
+                if status < 300:
+                    return status, result
 
 
 

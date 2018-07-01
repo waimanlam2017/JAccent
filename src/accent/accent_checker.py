@@ -14,10 +14,6 @@ class AccentChecker():
         self.load_cache_dict()
 
     def special_word_checking(self, word, pos):
-        # if ( 'よく' in word and '形容詞' in pos ):
-        #	return ( '1', 'よく', word + ": " + pos + ', 修正的特例 - よい的過去型', 'よく' )
-        # else:
-        #	return None
         pass
 
     def weblio_special_search(self, word, pos):
@@ -106,7 +102,7 @@ class AccentChecker():
         else:
             return None
 
-    def getGreekLetterAsAccent(self, accent):
+    def get_greek_letter_as_accent(self, accent):
         if accent == 0:
             symbol_accent = 'α'
         elif accent == 1:
@@ -122,7 +118,7 @@ class AccentChecker():
         elif accent == 6:
             symbol_accent = 'η'
         else:
-            symbol_accent = accent
+            symbol_accent = str(accent)
         return symbol_accent
 
     def save_cache_dict(self):
